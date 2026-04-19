@@ -1,19 +1,19 @@
 {
   "files": {
     "main.css": "/pharmacogenomics-portal/static/css/main.1c8a864d.css",
-    "main.js": "/pharmacogenomics-portal/static/js/main.f6365dde.js",
+    "main.js": "/pharmacogenomics-portal/static/js/main.43bc7ded.js",
     "static/js/239.783556f6.chunk.js": "/pharmacogenomics-portal/static/js/239.783556f6.chunk.js",
     "static/js/977.2a959571.chunk.js": "/pharmacogenomics-portal/static/js/977.2a959571.chunk.js",
     "static/js/732.2c645514.chunk.js": "/pharmacogenomics-portal/static/js/732.2c645514.chunk.js",
     "index.html": "/pharmacogenomics-portal/index.html",
     "main.1c8a864d.css.map": "/pharmacogenomics-portal/static/css/main.1c8a864d.css.map",
-    "main.f6365dde.js.map": "/pharmacogenomics-portal/static/js/main.f6365dde.js.map",
+    "main.43bc7ded.js.map": "/pharmacogenomics-portal/static/js/main.43bc7ded.js.map",
     "239.783556f6.chunk.js.map": "/pharmacogenomics-portal/static/js/239.783556f6.chunk.js.map",
     "977.2a959571.chunk.js.map": "/pharmacogenomics-portal/static/js/977.2a959571.chunk.js.map",
     "732.2c645514.chunk.js.map": "/pharmacogenomics-portal/static/js/732.2c645514.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.1c8a864d.css",
-    "static/js/main.f6365dde.js"
+    "static/js/main.43bc7ded.js"
   ]
 }
