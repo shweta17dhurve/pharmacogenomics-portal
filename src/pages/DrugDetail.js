@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Papa from "papaparse";
+import jsPDF from "jspdf";
 
 function DrugDetail() {
   const { name } = useParams();
@@ -14,7 +15,7 @@ function DrugDetail() {
   const [dose, setDose] = useState("");
 
   useEffect(() => {
-    fetch("/data/drugs.csv")
+    fetch(process.env.PUBLIC_URL + "/data/drugs.csv")
       .then(res => res.text())
       .then(text => {
         const data = Papa.parse(text, { header: true }).data;
@@ -23,6 +24,22 @@ function DrugDetail() {
       });
   }, [name]);
 
+  // 🔬 Clinical Recommendation
+  const getRecommendation = () => {
+    if (!drug) return "";
+
+    if (drug.drug === "Warfarin") {
+      return "Adjust dose based on CYP2C9 and VKORC1 genotype. Monitor INR closely.";
+    }
+
+    if (drug.drug === "Clopidogrel") {
+      return "Poor metabolizers should use alternative drugs like Ticagrelor.";
+    }
+
+    return "Standard pharmacogenomic guidance applies.";
+  };
+
+  // 🧮 Dose Calculator
   const calculateDose = () => {
     if (!genotype || !age || !weight) {
       setDose("Please fill all fields");
@@ -53,6 +70,19 @@ function DrugDetail() {
     setDose(result);
   };
 
+  // 📄 PDF Export
+  const downloadReport = () => {
+    const doc = new jsPDF();
+
+    doc.text(`Drug: ${drug.drug}`, 10, 10);
+    doc.text(`Gene: ${drug.gene}`, 10, 20);
+    doc.text(`Disease: ${drug.disease}`, 10, 30);
+    doc.text(`Clinical Significance: ${drug.clinical_significance}`, 10, 40);
+    doc.text(`Recommendation: ${getRecommendation()}`, 10, 50);
+
+    doc.save(`${drug.drug}_report.pdf`);
+  };
+
   if (!drug) return <h2 style={{ padding: "20px" }}>Loading...</h2>;
 
   return (
@@ -62,7 +92,7 @@ function DrugDetail() {
 
       <div style={container}>
 
-        {/* LEFT SIDE */}
+        {/* LEFT */}
         <div style={leftCard}>
 
           <Section title="Drug Information">
@@ -74,7 +104,6 @@ function DrugDetail() {
           <Section title="Description">
             <p>
               {drug.drug} is a {drug.class} used in treating {drug.disease}.
-              It plays a key role in personalized medicine.
             </p>
           </Section>
 
@@ -83,101 +112,65 @@ function DrugDetail() {
             <Row label="Gene Full Name" value={drug.gene_full_name} />
           </Section>
 
-          <Section title="Pharmacogenomic Significance">
-            <p>
-              Variations in {drug.gene} influence metabolism and response of {drug.drug},
-              affecting drug safety and efficacy.
-            </p>
-          </Section>
-
           <Section title="Clinical Significance">
             <span style={badge}>{drug.clinical_significance}</span>
+          </Section>
+
+          {/* 🔥 NEW FEATURE */}
+          <Section title="Clinical Recommendation">
+            <div style={recommendBox}>
+              {getRecommendation()}
+            </div>
           </Section>
 
           <Section title="Drug Response">
             <p>{drug.response}</p>
           </Section>
 
-          <Section title="Mechanism of Action">
+          <Section title="Mechanism">
             <p>{drug.mechanism}</p>
           </Section>
 
-          <Section title="Related Pharmacogenomic Genes">
-            <p>{drug.gene}</p>
-          </Section>
-
-          <Section title="Scientific Reference">
-            <p>{drug.reference_paper}</p>
-          </Section>
-
           {/* 🧮 CALCULATOR */}
-          <Section title="Dose Recommendation Calculator">
+          <Section title="Dose Calculator">
 
-            <p style={{ marginBottom: "15px", color: "#555" }}>
-              This calculator simulates dose adjustment guidance based on metabolizer status and basic patient factors.
-            </p>
-
-            {/* INPUT ROW */}
             <div style={calcGrid}>
+              <select value={genotype} onChange={(e) => setGenotype(e.target.value)} style={input}>
+                <option value="">Genotype</option>
+                <option value="Poor">Poor</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Normal">Normal</option>
+                <option value="Ultra">Ultra</option>
+              </select>
 
-              <div>
-                <label style={label}>Metabolizer Genotype</label>
-                <select value={genotype} onChange={(e) => setGenotype(e.target.value)} style={input}>
-                  <option value="">Select genotype</option>
-                  <option value="Poor">Poor metabolizer</option>
-                  <option value="Intermediate">Intermediate metabolizer</option>
-                  <option value="Normal">Normal metabolizer</option>
-                  <option value="Ultra">Ultra-rapid metabolizer</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={label}>Age</label>
-                <input type="number" value={age} onChange={(e) => setAge(e.target.value)} style={input} />
-              </div>
-
-              <div>
-                <label style={label}>Weight (kg)</label>
-                <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} style={input} />
-              </div>
-
+              <input type="number" placeholder="Age" onChange={(e) => setAge(e.target.value)} style={input} />
+              <input type="number" placeholder="Weight" onChange={(e) => setWeight(e.target.value)} style={input} />
             </div>
 
-            <button style={calcBtnLarge} onClick={calculateDose}>
+            <button style={btn} onClick={calculateDose}>
               Calculate Dose
             </button>
 
-            {dose && (
-              <div style={resultBox}>
-                <b>{dose}</b>
-              </div>
-            )}
-
+            {dose && <p>{dose}</p>}
           </Section>
+
+          {/* 📄 PDF */}
+          <button style={btn} onClick={downloadReport}>
+            Download Report
+          </button>
 
         </div>
 
-        {/* RIGHT SIDE */}
+        {/* RIGHT */}
         <div style={right}>
 
           <div style={card}>
-            <h3 style={cardTitle}>Molecular Structure</h3>
-            <div style={imageBox}>
-              <img
-                src={`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${drug.drug}/PNG`}
-                alt="structure"
-                style={{ width: "100%" }}
-              />
-            </div>
-          </div>
-
-          <div style={card}>
-            <h3 style={cardTitle}>External Links</h3>
-
-            <p>🔗 <a href={`https://pubmed.ncbi.nlm.nih.gov/?term=${drug.drug}`} target="_blank" rel="noreferrer">PubMed</a></p>
-            <p>🔗 <a href={`https://www.ncbi.nlm.nih.gov/gene/?term=${drug.gene}`} target="_blank" rel="noreferrer">NCBI Gene</a></p>
-            <p>🔗 <a href={`https://go.drugbank.com/unearth/q?query=${drug.drug}`} target="_blank" rel="noreferrer">DrugBank</a></p>
-
+            <h3>Molecular Structure</h3>
+            <img
+              src={`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${drug.drug}/PNG`}
+              alt="structure"
+              style={{ width: "100%" }}
+            />
           </div>
 
         </div>
@@ -190,7 +183,7 @@ function DrugDetail() {
 /* COMPONENTS */
 const Section = ({ title, children }) => (
   <div style={section}>
-    <h3 style={sectionTitle}>{title}</h3>
+    <h3>{title}</h3>
     {children}
   </div>
 );
@@ -207,9 +200,8 @@ const container = { display: "flex", gap: "20px" };
 const leftCard = {
   flex: 2,
   background: "white",
-  padding: "25px",
-  borderRadius: "10px",
-  boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+  padding: "20px",
+  borderRadius: "10px"
 };
 
 const right = { flex: 1 };
@@ -217,17 +209,10 @@ const right = { flex: 1 };
 const card = {
   background: "white",
   padding: "20px",
-  borderRadius: "10px",
-  marginBottom: "20px",
-  boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+  borderRadius: "10px"
 };
 
 const section = { marginBottom: "20px" };
-
-const sectionTitle = {
-  borderBottom: "1px solid #ddd",
-  marginBottom: "10px"
-};
 
 const badge = {
   background: "#f8d7da",
@@ -235,50 +220,30 @@ const badge = {
   borderRadius: "20px"
 };
 
-const calcGrid = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr",
-  gap: "20px",
-  marginBottom: "15px"
-};
-
-const label = {
-  display: "block",
-  marginBottom: "5px"
-};
-
-const input = {
-  width: "100%",
-  padding: "10px",
-  border: "1px solid #ccc",
-  borderRadius: "6px"
-};
-
-const calcBtnLarge = {
-  background: "#2563eb",
-  color: "white",
-  padding: "10px 20px",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer"
-};
-
-const resultBox = {
-  marginTop: "15px",
+const recommendBox = {
   background: "#e6f4ea",
   padding: "10px",
   borderRadius: "6px"
 };
 
-const imageBox = {
-  background: "#f5f5f5",
-  padding: "10px",
-  borderRadius: "8px"
+const calcGrid = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr 1fr",
+  gap: "10px"
 };
 
-const cardTitle = {
-  fontWeight: "bold",
-  marginBottom: "10px"
+const input = {
+  padding: "10px",
+  border: "1px solid #ccc"
+};
+
+const btn = {
+  marginTop: "10px",
+  padding: "10px",
+  background: "#2563eb",
+  color: "white",
+  border: "none",
+  borderRadius: "5px"
 };
 
 export default DrugDetail;
