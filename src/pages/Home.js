@@ -20,17 +20,20 @@ function Home() {
       });
   }, []);
 
+  // 🔍 LIVE SEARCH FUNCTION
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+
+    const filtered = drugs.filter(d =>
+      d.drug.toLowerCase().includes(value.toLowerCase())
+    );
+
+    setSuggestions(filtered.slice(0, 5));
+  };
+
+  // 🔎 SEARCH BUTTON
   const handleSearch = () => {
-    const handleChange = (e) => {
-  const value = e.target.value;
-  setSearch(value);
-
-  const filtered = drugs.filter(d =>
-    d.drug.toLowerCase().includes(value.toLowerCase())
-  );
-
-  setSuggestions(filtered.slice(0, 5));
-};
     if (!search.trim()) return;
 
     const found = drugs.find(d =>
@@ -97,25 +100,29 @@ function Home() {
               </button>
             </div>
 
-            <div style={{
-  background: "white",
-  border: "1px solid #ccc",
-  borderRadius: "5px"
-}}>
-  {suggestions.map((s, i) => (
-    <div
-      key={i}
-      style={{
-        padding: "10px",
-        cursor: "pointer",
-        borderBottom: "1px solid #eee"
-      }}
-      onClick={() => navigate(`/drug/${s.drug}`)}
-    >
-      {s.drug} ({s.gene})
-    </div>
-  ))}
-</div>
+            {/* 🔽 LIVE SEARCH DROPDOWN */}
+            {suggestions.length > 0 && (
+              <div style={{
+                background: "white",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                marginTop: "5px"
+              }}>
+                {suggestions.map((s, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      padding: "10px",
+                      cursor: "pointer",
+                      borderBottom: "1px solid #eee"
+                    }}
+                    onClick={() => navigate(`/drug/${s.drug}`)}
+                  >
+                    {s.drug} ({s.gene})
+                  </div>
+                ))}
+              </div>
+            )}
 
             {searched && (
               <p style={{ marginTop: "10px", color: "red" }}>
