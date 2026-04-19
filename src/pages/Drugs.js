@@ -3,6 +3,12 @@ import Papa from "papaparse";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
+// 🔥 CHART IMPORTS
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 function Drugs() {
   const [drugs, setDrugs] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -66,6 +72,23 @@ function Drugs() {
     fontSize: "12px"
   });
 
+  // 📊 CHART DATA
+  const geneCounts = {};
+  drugs.forEach(d => {
+    if (d.gene) {
+      geneCounts[d.gene] = (geneCounts[d.gene] || 0) + 1;
+    }
+  });
+
+  const chartData = {
+    labels: Object.keys(geneCounts),
+    datasets: [
+      {
+        data: Object.values(geneCounts)
+      }
+    ]
+  };
+
   // CSV EXPORT
   const exportCSV = () => {
     const csv = Papa.unparse(filtered);
@@ -97,6 +120,12 @@ function Drugs() {
   return (
     <div style={{ padding: "30px", background: "#f5f7fa" }}>
       <h1>Drug Dashboard</h1>
+
+      {/* 🔥 CHART */}
+      <div style={{ width: "300px", marginBottom: "20px" }}>
+        <h3>Gene Distribution</h3>
+        <Pie data={chartData} />
+      </div>
 
       {/* FILTER PANEL */}
       <div style={filterCard}>
@@ -193,7 +222,7 @@ function Drugs() {
   );
 }
 
-/* 🎨 STYLES */
+/* STYLES */
 
 const filterCard = {
   background: "white",
