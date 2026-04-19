@@ -7,11 +7,12 @@ function Home() {
   const [drugs, setDrugs] = useState([]);
   const [search, setSearch] = useState("");
   const [searched, setSearched] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("/data/drugs.csv")
+    fetch(process.env.PUBLIC_URL + "/data/drugs.csv")
       .then(res => res.text())
       .then(text => {
         const data = Papa.parse(text, { header: true }).data;
@@ -20,6 +21,16 @@ function Home() {
   }, []);
 
   const handleSearch = () => {
+    const handleChange = (e) => {
+  const value = e.target.value;
+  setSearch(value);
+
+  const filtered = drugs.filter(d =>
+    d.drug.toLowerCase().includes(value.toLowerCase())
+  );
+
+  setSuggestions(filtered.slice(0, 5));
+};
     if (!search.trim()) return;
 
     const found = drugs.find(d =>
@@ -77,7 +88,7 @@ function Home() {
               <input
                 placeholder="Enter drug name (e.g., warfarin)"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={handleChange}
                 style={input}
               />
 
@@ -85,6 +96,26 @@ function Home() {
                 Search
               </button>
             </div>
+
+            <div style={{
+  background: "white",
+  border: "1px solid #ccc",
+  borderRadius: "5px"
+}}>
+  {suggestions.map((s, i) => (
+    <div
+      key={i}
+      style={{
+        padding: "10px",
+        cursor: "pointer",
+        borderBottom: "1px solid #eee"
+      }}
+      onClick={() => navigate(`/drug/${s.drug}`)}
+    >
+      {s.drug} ({s.gene})
+    </div>
+  ))}
+</div>
 
             {searched && (
               <p style={{ marginTop: "10px", color: "red" }}>

@@ -5,19 +5,49 @@ function Genes() {
   const [genes, setGenes] = useState([]);
 
   useEffect(() => {
-    fetch("/data/drugs.csv")
+    fetch(process.env.PUBLIC_URL + "/data/drugs.csv")
       .then(res => res.text())
       .then(text => {
-        const data = Papa.parse(text, { header: true }).data;
-        const unique = [...new Set(data.map(d => d.gene))];
-        setGenes(unique);
+        const parsed = Papa.parse(text, { header: true });
+        const data = parsed.data;
+
+        // Remove empty + get unique genes
+        const uniqueGenes = [
+          ...new Set(
+            data
+              .map(d => d.gene)
+              .filter(g => g && g.trim() !== "")
+          )
+        ];
+
+        setGenes(uniqueGenes);
+      })
+      .catch(err => {
+        console.error("Error loading CSV:", err);
       });
   }, []);
 
   return (
-    <div>
-      <h1>Genes</h1>
-      {genes.map(g => <div key={g}>{g}</div>)}
+    <div style={{ padding: "20px" }}>
+      <h1>Pharmacogenomic Genes</h1>
+
+      {genes.length === 0 ? (
+        <p>Loading genes...</p>
+      ) : (
+        genes.map((gene, i) => (
+          <div
+            key={i}
+            style={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              margin: "10px",
+              borderRadius: "6px"
+            }}
+          >
+            <h3>{gene}</h3>
+          </div>
+        ))
+      )}
     </div>
   );
 }

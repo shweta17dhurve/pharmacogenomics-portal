@@ -13,7 +13,7 @@ function Drugs() {
   const [clinical, setClinical] = useState("");
 
   useEffect(() => {
-    fetch("/data/drugs.csv")
+    fetch(process.env.PUBLIC_URL + "/data/drugs.csv")
       .then(res => res.text())
       .then(text => {
         const data = Papa.parse(text, { header: true }).data.filter(d => d.drug);
