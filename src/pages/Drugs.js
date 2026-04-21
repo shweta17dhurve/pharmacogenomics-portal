@@ -18,6 +18,7 @@ function Drugs() {
   const [drugClass, setDrugClass] = useState("");
   const [clinical, setClinical] = useState("");
 
+  // LOAD DATA
   useEffect(() => {
     fetch(process.env.PUBLIC_URL + "/data/drugs.csv")
       .then(res => res.text())
@@ -28,14 +29,16 @@ function Drugs() {
       });
   }, []);
 
+  // FILTER LOGIC
   useEffect(() => {
     let data = drugs;
 
-    if (search)
+    if (search) {
       data = data.filter(d =>
         d.drug.toLowerCase().includes(search.toLowerCase()) ||
         d.gene.toLowerCase().includes(search.toLowerCase())
       );
+    }
 
     if (gene) data = data.filter(d => d.gene === gene);
     if (drugClass) data = data.filter(d => d.class === drugClass);
@@ -51,6 +54,7 @@ function Drugs() {
     setClinical("");
   };
 
+  // BADGE STYLE
   const getBadgeStyle = (val) => {
     if (!val) return badge("#ccc", "#000");
 
@@ -72,28 +76,25 @@ function Drugs() {
     fontSize: "12px"
   });
 
-  // 📊 CHART DATA
-  const chartData = {
-  labels: Object.keys(geneCounts),
-  datasets: [
-    {
-      data: Object.values(geneCounts),
-
-      backgroundColor: [
-        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
-        "#9966FF", "#FF9F40", "#8dd1e1", "#d0ed57",
-        "#a4de6c", "#ffc658", "#ff8042", "#8884d8",
-        "#82ca9d", "#ffc0cb", "#87ceeb"
-      ]
+  // 📊 CHART DATA (ONLY ONCE — NO DUPLICATE)
+  const geneCounts = {};
+  drugs.forEach(d => {
+    if (d.gene) {
+      geneCounts[d.gene] = (geneCounts[d.gene] || 0) + 1;
     }
-  ]
-};
+  });
 
   const chartData = {
     labels: Object.keys(geneCounts),
     datasets: [
       {
-        data: Object.values(geneCounts)
+        data: Object.values(geneCounts),
+        backgroundColor: [
+          "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+          "#9966FF", "#FF9F40", "#8dd1e1", "#d0ed57",
+          "#a4de6c", "#ffc658", "#ff8042", "#8884d8",
+          "#82ca9d", "#ffc0cb", "#87ceeb"
+        ]
       }
     ]
   };
@@ -130,8 +131,8 @@ function Drugs() {
     <div style={{ padding: "30px", background: "#f5f7fa" }}>
       <h1>Drug Dashboard</h1>
 
-      {/* 🔥 CHART */}
-      <div style={{ width: "300px", marginBottom: "20px" }}>
+      {/* 📊 COLORFUL PIE CHART */}
+      <div style={{ width: "350px", marginBottom: "20px" }}>
         <h3>Gene Distribution</h3>
         <Pie data={chartData} />
       </div>
