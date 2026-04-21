@@ -73,12 +73,21 @@ function Drugs() {
   });
 
   // 📊 CHART DATA
-  const geneCounts = {};
-  drugs.forEach(d => {
-    if (d.gene) {
-      geneCounts[d.gene] = (geneCounts[d.gene] || 0) + 1;
+  const chartData = {
+  labels: Object.keys(geneCounts),
+  datasets: [
+    {
+      data: Object.values(geneCounts),
+
+      backgroundColor: [
+        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+        "#9966FF", "#FF9F40", "#8dd1e1", "#d0ed57",
+        "#a4de6c", "#ffc658", "#ff8042", "#8884d8",
+        "#82ca9d", "#ffc0cb", "#87ceeb"
+      ]
     }
-  });
+  ]
+};
 
   const chartData = {
     labels: Object.keys(geneCounts),
